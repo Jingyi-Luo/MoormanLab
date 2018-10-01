@@ -2,7 +2,12 @@
 library(dplyr)#to read in large file
 library(RANN)#for knn SMOTE stuff
 setwd('C:\\Users\\x1\\Documents\\Capstone\\Data')
+
 all_data <- readr::read_csv('moss_plos_one_data.csv')
+#Fill in only missing values with median
+all_data$O2.Flow[is.na(all_data$O2.Flow)] <- median(all_data$O2.Flow,na.rm = TRUE)
+all_data$SODIUM[is.na(all_data$SODIUM)] <- median(all_data$SODIUM,na.rm = TRUE)
+#Saved R data for easier loading later
 load('C:\\Users\\x1\\Documents\\Capstone\\Data\\capstone_data_o2_filled.RData')
 
 length(unique(all_data$id))
@@ -43,7 +48,7 @@ count / 10000
 #.634 pretty sure this is c stat seems about right given results from the paper
 
 #Next do same as above but try and include all VS variables
-all_data$O2.Flow[is.na(all_data$O2.Flow)] <- median(all_data$O2.Flow,na.rm = TRUE)
+
 
 VS_mod <- glm(y~Pulse + O2.Flow + Resp + SpO2 + SBP + Glasgow.Coma.Scale.Total,data = all_data,family = 'binomial')
 summary(VS_mod)

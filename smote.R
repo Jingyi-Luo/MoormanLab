@@ -27,7 +27,7 @@ sum(nearest$test)/length(nearest$test) #62.2% of them have neighbor from another
 nearest_neighbor <- true_data[nearest$nn.idx.2,]
 
 #synthtic data = (diff)*U(0,1) + old data where diff is difference between data and its nearest neighbor
-synthetic_data <- (true_data[,16:62]-nearest_neighbor[,16:62])*runif(length(16:62),min = 0, max =1)+true_data[,16:62]
+synthetic_data <- (nearest_neighbor[,16:62]-true_data[,16:62])*runif(length(16:62),min = 0, max =1)+true_data[,16:62]
 synthetic_data['y'] <- TRUE
 
 #save synthetic data

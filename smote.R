@@ -1,41 +1,49 @@
 #SMOTE Implementation
 library(RANN)#for knn SMOTE stuff
 library(plyr)
-load('C:\\Users\\x1\\Documents\\Capstone\\MoormanLab\\Data\\data_non_events_sampled.RData')
+load('C:\\Users\\x1\\Documents\\Capstone\\Data\\data_non_events_sampled.RData')
 
+#make data frame of variables to be used in knn can't use all 48 so choose important 4
+true_data_test <- data.frame(true_data$O2.Flow,true_data$edrk,true_data$WHITE.BLOOD.CELL.COUNT,true_data$hr)
 
-true_data_test <- data.frame(true_data$O2.Flow,true_data$edrk,true_data$BLOOD.UREA.NITROGEN,true_data$hr)
+#scale the data so that k-nn isn't based off nominal differnces but distance from mean instead
+scaled.dat <- scale(true_data_test) 
 
-scaled.dat <- scale(true_data_test)#scale the data so that k-nn is based off scaled data 
-nearest <- nn2(scaled.dat,k = 5) #finds 5 nearest neighbors for all points
-nearest[1]
+#finds 5 nearest neighbors for all points, first is always itself
+nearest <- nn2(scaled.dat,k = 6) 
 nearest <- as.data.frame(nearest)
-nearest$test <- ((true_data[nearest$nn.idx.2,]$id != true_data[nearest$nn.idx.1,]$id)|(true_data[nearest$nn.idx.3,]$id != true_data[nearest$nn.idx.1,]$id)|(true_data[nearest$nn.idx.4,]$id != true_data[nearest$nn.idx.1,]$id)|(true_data[nearest$nn.idx.5,]$id != true_data[nearest$nn.idx.1,]$id))
+
 #checks to see if one of nearest neighbors is from a different patient
-sum(nearest$test)/length(nearest$test) #60.8% of them have neighbor from another patient
+nearest$test <-  ((true_data[nearest$nn.idx.2,]$id != true_data[nearest$nn.idx.1,]$id)
+                 |(true_data[nearest$nn.idx.3,]$id != true_data[nearest$nn.idx.1,]$id)
+                 |(true_data[nearest$nn.idx.4,]$id != true_data[nearest$nn.idx.1,]$id)
+                 |(true_data[nearest$nn.idx.5,]$id != true_data[nearest$nn.idx.1,]$id)
+                 |(true_data[nearest$nn.idx.6,]$id != true_data[nearest$nn.idx.1,]$id)
+                 )
 
-synthetic_data <- true_data[0,]
-#finds nearest neighbor for all events
-#generates a synthetic point in between actual point and nearest neighbor
-for(obs in 1:length(true_data$id)){
-  nearest_index <- nearest[obs,2]#finds nearest neighbor to index
-  new_event <- (true_data[obs,16:62] - true_data[nearest_index,16:62])*runif(length(16:62), min=0, max=1) + true_data[obs,16:62]
-  #make new event off differnce from old event and it's neighbor multiplied by a rand(0,1) number add orginal values
-  new_event$y <- TRUE
-  synthetic_data <- rbind(synthetic_data, new_event)
-  print(obs)
-}
+sum(nearest$test)/length(nearest$test) #62.2% of them have neighbor from another patient
 
+#data frame of nearest neighbor for each point in true data makes generating syntheic data easier
+nearest_neighbor <- true_data[nearest$nn.idx.2,]
+
+#synthtic data = (diff)*U(0,1) + old data where diff is difference between data and its nearest neighbor
+synthetic_data <- (true_data[,16:62]-nearest_neighbor[,16:62])*runif(length(16:62),min = 0, max =1)+true_data[,16:62]
+synthetic_data['y'] <- TRUE
+
+#save synthetic data
 saveRDS(synthetic_data, file = "syn_data_o2_hr_edrk_blood.rds")
-synthetic_data <- readRDS(file ='C:\\Users\\x1\\Documents\\Capstone\\MoormanLab\\Data\\syn_data_o2_hr_edrk_blood.rds' )
+synthetic_data <- readRDS(file ='C:\\Users\\x1\\Documents\\Capstone\\Data\\syn_data_o2_hr_edrk_blood.rds' )
 
-load('C:\\Users\\x1\\Documents\\Capstone\\MoormanLab\\Data\\capstone_data_o2_filled.RData')
+load('C:\\Users\\x1\\Documents\\Capstone\\Data\\capstone_data_o2_filled.RData')
+
 #see if this improved logistic regression c stat
 all_data_with_syn <- rbind.fill(all_data,synthetic_data)
 
 #Look at combined VS and Lab Results this time training on synthetic data as well as the real data
 rm(all_data)
+
 vs_lab_mod <- glm(y~WHITE.BLOOD.CELL.COUNT+BLOOD.UREA.NITROGEN+AST.GOT+PLATELET.COUNT+GLUCOSE+PCO2+POTASSIUM+SODIUM+CO2+Pulse + O2.Flow + Resp + SpO2 + SBP + Glasgow.Coma.Scale.Total,data = all_data_with_syn,family = 'binomial')
+
 summary(vs_lab_mod)
 # glm(formula = y ~ WHITE.BLOOD.CELL.COUNT + BLOOD.UREA.NITROGEN + 
 #       AST.GOT + PLATELET.COUNT + GLUCOSE + PCO2 + POTASSIUM + SODIUM + 
@@ -77,8 +85,11 @@ summary(vs_lab_mod)
 
 #try and estimate the c statistic by picking one event one non event 
 #predict which one is event 
+
+#my laptop can't hold too many large data sets so clear out extra copy
 rm(all_data_with_syn)
-load('C:\\Users\\x1\\Documents\\Capstone\\MoormanLab\\Data\\capstone_data_o2_filled.RData')
+
+load('C:\\Users\\x1\\Documents\\Capstone\\Data\\capstone_data_o2_filled.RData')
 count = 0 
 for(i in 1:10000){
   test <- TRUE
@@ -95,4 +106,5 @@ for(i in 1:10000){
 }
 count / 10000
 #.7178 is a little higher than the previous .716 might just be chance though
+
 

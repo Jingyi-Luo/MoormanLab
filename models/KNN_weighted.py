@@ -219,5 +219,8 @@ print('KNN roc: {0:8.4f}'.format(knn_roc_auc))
 #
 
 # Summary:
-# n_neighbor      AUC        Score-1
-#   5            0.524       
+# Summary:
+#KNN Score 1:    0.015
+#KNN roc:   0.5659
+#Weighted_KNN Score 1:    0.016
+#Weighted_KNN roc:   0.4302      

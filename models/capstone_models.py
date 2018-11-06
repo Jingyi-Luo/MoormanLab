@@ -152,20 +152,11 @@ type(X_train_sample)
 #==============================================================================
 #                             Logistic Regression
 #==============================================================================
+from sklearn import metrics
 # Instantiate the model using default parameters
 logreg = LogisticRegression(random_state=0)
 # fit the model with X_train, y_train
 logreg.fit(X_train_sample, y_train_sample)
-
-# prediction X_train
-y_train_pred_logreg = logreg.predict(X_train_sample)
-# evaluate model: accuracy of logitstic regression classifier on training set
-from sklearn import metrics
-cnf_matrix_train = metrics.confusion_matrix(y_train_sample, y_train_pred_logreg)
-# the accuracy rate:
-accurate_rate_logreg_train = (cnf_matrix_train[0,0]+cnf_matrix_train[1,1])/len(y_train_sample)
-accurate_rate_logreg_train
-# 0.68283
 
 # prediction X_test 
 y_pred_logreg = logreg.predict(X_test)
@@ -173,13 +164,11 @@ y_pred_logreg = logreg.predict(X_test)
 # Score 1
 # Confusion Matrix
 cnf_matrix_logreg = metrics.confusion_matrix(y_test, y_pred_logreg)
-#accurate_rate_logreg = (cnf_matrix[0,0]+cnf_matrix[1,1])/len(y_test)
-#accurate_rate_logreg
-# 0.7085858876824228
-Se_logreg = cnf_matrix_logreg[0, 0]/(cnf_matrix_logreg[0, 0]+cnf_matrix_logreg[1, 0])
-p_plus_logreg = cnf_matrix_logreg[0, 0]/(cnf_matrix_logreg[0, 0]+cnf_matrix_logreg[0, 1])
+Se_logreg = cnf_matrix_logreg[1, 1]/(cnf_matrix_logreg[1, 1]+cnf_matrix_logreg[0, 1])
+p_plus_logreg = cnf_matrix_logreg[1, 1]/(cnf_matrix_logreg[1, 1]+cnf_matrix_logreg[1, 0])
 score_1_logreg = min(Se_logreg, p_plus_logreg)
 print('Logistic Regression Score 1: {0:8.3f}'.format(score_1_logreg))
+# 0.021
 
 # ROC Curve: the receiver operating characteristic curve
 from sklearn.metrics import roc_auc_score
@@ -227,21 +216,16 @@ forest_clf = RandomForestClassifier(n_estimators=600, n_jobs = -1, random_state=
 # train the classifer using the training set
 forest_clf.fit(X_train_sample, y_train_sample)
 
-# prediction X_train
-y_train_pred_forest = forest_clf.predict(X_train_sample)
-metrics.accuracy_score(y_train_sample, y_train_pred_forest)
-
 # prediction X_test 
 y_pred_forest = forest_clf.predict(X_test)
-metrics.accuracy_score(y_test, y_pred_forest)
 
 # Score 1
 cnf_matrix_forest = metrics.confusion_matrix(y_test, y_pred_forest)
-Se_forest = cnf_matrix_forest[0, 0]/(cnf_matrix_forest[0, 0]+cnf_matrix_forest[1, 0])
-p_plus_forest = cnf_matrix_forest[0, 0]/(cnf_matrix_forest[0, 0]+cnf_matrix_forest[0, 1])
+Se_forest = cnf_matrix_forest[1, 1]/(cnf_matrix_forest[0, 1]+cnf_matrix_forest[1, 1])
+p_plus_forest = cnf_matrix_forest[1, 1]/(cnf_matrix_forest[1, 1]+cnf_matrix_forest[1, 0])
 score_1_forest = min(Se_forest, p_plus_forest)
 print('Random Forest Score 1: {0:8.3f}'.format(score_1_forest))
-# 0.709561751154195
+# 0.003
 
 # ROC Curve: the receiver operating characteristic curve
 y_pred_proba_forest = forest_clf.predict_proba(X_test)[:, 1]
@@ -298,19 +282,13 @@ svm_linear_clf = SVC(kernel='linear', probability=True, random_state=0)
 # train model
 svm_linear_clf.fit(X_train_sample, y_train_sample)
 
-# prediction X_train
-y_train_pred_svm_linear = svm_linear_clf.predict(X_train_sample)
-metrics.accuracy_score(y_train_sample, y_train_pred_svm_linear)
-
 # prediction X_test & accuracy score
 y_pred_svm_linear = svm_linear_clf.predict(X_test)
-metrics.accuracy_score(y_test, y_pred_svm_linear)
-
 
 # Score-1
 cnf_matrix_svm_linear = metrics.confusion_matrix(y_test, y_pred_svm_linear)
-Se_svm_linear = cnf_matrix_svm_linear[0, 0]/(cnf_matrix_svm_linear[0, 0]+cnf_matrix_svm_linear[1, 0])
-p_plus_svm_linear = cnf_matrix_svm_linear[0, 0]/(cnf_matrix_svm_linear[0, 0]+cnf_matrix_svm_linear[0, 1])
+Se_svm_linear = cnf_matrix_svm_linear[1, 1]/(cnf_matrix_svm_linear[1, 1]+cnf_matrix_svm_linear[0, 1])
+p_plus_svm_linear = cnf_matrix_svm_linear[1, 1]/(cnf_matrix_svm_linear[1, 1]+cnf_matrix_svm_linear[1, 0])
 score_1_svm_linear = min(Se_svm_linear, p_plus_svm_linear)
 print('SVM Linear Score 1: {0:8.3f}'.format(score_1_svm_linear))
 # 
@@ -341,19 +319,13 @@ plt.close()
 svm_kernel_clf = SVC(kernel='rbf', probability=True, random_state=0)
 svm_kernel_clf.fit(X_train_sample, y_train_sample)
 
-# prediction X_train
-y_train_pred_svm_kernel = svm_kernel_clf.predict(X_train_sample)
-metrics.accuracy_score(y_train_sample, y_train_pred_svm_kernel)
-
 # prediction X_test & accuracy score
 y_pred_svm_kernel = svm_kernel_clf.predict(X_test)
-metrics.accuracy_score(y_test, y_pred_svm_kernel)
-# 
 
 # Score-1
 cnf_matrix_svm_kernel = metrics.confusion_matrix(y_test, y_pred_svm_kernel)
-Se_svm_kernel = cnf_matrix_svm_kernel[0, 0]/(cnf_matrix_svm_kernel[0, 0]+cnf_matrix_svm_kernel[1, 0])
-p_plus_svm_kernel = cnf_matrix_svm_kernel[0, 0]/(cnf_matrix_svm_kernel[0, 0]+cnf_matrix_svm_kernel[0, 1])
+Se_svm_kernel = cnf_matrix_svm_kernel[1, 1]/(cnf_matrix_svm_kernel[1, 1]+cnf_matrix_svm_kernel[0, 1])
+p_plus_svm_kernel = cnf_matrix_svm_kernel[1, 1]/(cnf_matrix_svm_kernel[1, 1]+cnf_matrix_svm_kernel[1, 0])
 score_1_svm_kernel = min(Se_svm_kernel, p_plus_svm_kernel)
 print('SVM nonlinear Score 1: {0:8.3f}'.format(score_1_svm_kernel))
 # 
@@ -393,12 +365,6 @@ from sklearn import metrics
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import roc_curve
 
-#from sklearn.preprocessing import StandardScaler
-#sc = StandardScaler()
-#X_train_sample = sc.fit_transform(X_train_df)  
-#X_test = sc.transform(X_test)
-#type(X_train_sample)
-
 # weight all features using random forest importance
 feature_importance_forest = pd.read_csv('Feature Importance.csv',names = ['name','importance'])
 X_train_knn = pd.DataFrame(X_train_sample)   # array to dataframe
@@ -418,11 +384,6 @@ X_test_weighted_df = pd.DataFrame(X_test_weighted, columns = sorted(X_train_df.c
 knn_clf = KNeighborsClassifier(n_neighbors=5, metric='minkowski', p=2) #Euclidean
 knn_clf.fit(X_train_weighted_df, y_train_sample)
 
-# prediction X_train
-#y_train_pred_knn = knn_clf.predict(df_weighted) # X_train_sample
-#metrics.accuracy_score(y_train_sample, y_train_pred_knn)
-# 
-
 # prediction X_test & accuracy score
 y_pred_knn = knn_clf.predict(X_test_weighted_df)
 #metrics.accuracy_score(y_test, y_pred_knn)
@@ -430,8 +391,8 @@ y_pred_knn = knn_clf.predict(X_test_weighted_df)
 # Score 1
 cnf_matrix_knn = metrics.confusion_matrix(y_test, y_pred_knn)
 #accurate_rate_knn = (cnf_matrix_knn[0,0]+cnf_matrix_knn[1,1])/len(y_test)
-Se_knn = cnf_matrix_knn[0, 0]/(cnf_matrix_knn[0, 0]+cnf_matrix_knn[1, 0])
-p_plus_knn = cnf_matrix_knn[0, 0]/(cnf_matrix_knn[0, 0]+cnf_matrix_knn[0, 1])
+Se_knn = cnf_matrix_knn[1, 1]/(cnf_matrix_knn[1, 1]+cnf_matrix_knn[0, 1])
+p_plus_knn = cnf_matrix_knn[1, 1]/(cnf_matrix_knn[1, 1]+cnf_matrix_knn[1, 0])
 score_1_knn = min(Se_knn, p_plus_knn)
 print('KNN Score 1: {0:8.3f}'.format(score_1_knn))
 # 
@@ -501,8 +462,8 @@ y_pred_proba_ANN = ANN_clf.predict(X_test)
 y_pred_ANN = (y_pred_proba_ANN > 0.5)
 #accuracy_ANN = (cm[0,0] +cm[1,1])/len(y_test)
 cnf_matrix_ANN = metrics.confusion_matrix(y_test, y_pred_ANN)
-Se_ANN = cnf_matrix_ANN[0, 0]/(cnf_matrix_ANN[0, 0]+cnf_matrix_ANN[1, 0])
-p_plus_ANN = cnf_matrix_ANN[0, 0]/(cnf_matrix_ANN[0, 0]+cnf_matrix_ANN[0, 1])
+Se_ANN = cnf_matrix_ANN[1, 1]/(cnf_matrix_ANN[1, 1]+cnf_matrix_ANN[0, 1])
+p_plus_ANN = cnf_matrix_ANN[1, 1]/(cnf_matrix_ANN[1, 1]+cnf_matrix_ANN[1, 0])
 score_1_ANN = min(Se_ANN, p_plus_ANN)
 print('ANN Score 1: {0:8.3f}'.format(score_1_ANN))
 # 
@@ -535,19 +496,4 @@ plt.close()
 # Hidden layers    units   batch-size     epoch       AUC       Score-1
 #  2                64       10            100        0.560     0.678
 
-
-
 #==============================================================================
-#Notes:
-# ROC 
-#ROC curve which is about the tradeoff between true positives and false positives 
-#at different thresholds. This AUC value can be used as an evaluation metric, 
-#especially when there is imbalanced classes.
-
-# Score-1
-#Se = TP / (TP + FN)	[the fraction of in-hospital deaths that are predicted]
-#+P = TP / (TP + FP)	[the fraction of correct predictions of in-hospital deaths]
-#Score1 = min(Se,+P)	[the minimum of Sensitivity and positive predictivity]
-#     +   -
-# + [TP, FP]
-# - [FN, TN]

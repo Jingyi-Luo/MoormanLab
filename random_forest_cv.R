@@ -1,5 +1,6 @@
 library(randomForest)
 library(caret)
+library(PRROC)
 library(RANN)#for knn SMOTE stuff
 #look into ranger for faster rf w/ weighting stuff
 #makes synthetic sample with n*100% increase
@@ -41,6 +42,7 @@ t5 <- true_ids[296:367]
 
 count = 1
 c_stat = rep(0,5)
+precision_recall <- rep(0,5)
 mean_null <-  rep(0,5)
 mean_true <- rep(0,5)
 for(i in 1:5){#in c(t1,t2,t3,t4,t5)
@@ -63,10 +65,10 @@ for(i in 1:5){#in c(t1,t2,t3,t4,t5)
   train <- subset(true_data,!(id %in% ids))
  
   #add synthetic samples
-  train <- rbind(train,generate_syn_data(train,3))#should be about 38210
+  train <- rbind(train,generate_syn_data(train,2))#should be about 38210
   #average case has 270 observations so roughly match events to non-events by changing
   #second number 
-  null_training <- sample(null_ids,1400)#70 for no SMOTE
+  null_training <- sample(null_ids,140)#70 for no SMOTE
   
   #add null samples to training total data set
   train <- rbind(train,subset(all_data,id %in% null_training))
@@ -74,24 +76,25 @@ for(i in 1:5){#in c(t1,t2,t3,t4,t5)
   train <- train[,c(10,16:61)]
   
   #fit random forest model
-  test.rf=randomForest(as.factor(y) ~ .,data = train,ntree=100,classwts = c(10,1))
+  test.rf=randomForest(as.factor(y) ~ .,data = train,ntree=100)
   
   #create test set
   test_true <- subset(true_data,(id %in% ids))
   #predict probs for test set
-  p1 <- predict(test.rf,test_true[sample(nrow(test_true),10000,replace = TRUE),],type = 'prob')[,2]
+  p1 <- predict(test.rf,test_true,type = 'prob')[,2]
   #generate null-test set
-  test_null <- subset(all_data,!((id %in% null_training)& !(id %in% true_ids)))
-  p0 <- predict(test.rf,test_null[sample(nrow(test_null),10000),],type = 'prob')[,2]
+  test_null <- subset(all_data,!((id %in% null_training) | ((id %in% ids)& y == FALSE)))
+  p0 <- predict(test.rf,test_null[sample(nrow(test_null),50000),],type = 'prob')[,2]
   rm(test_null)
   mean_true[i] <- mean(p1)
   mean_null[i] <- mean(p0)
-  c_stat[count] <- sum((p0 < p1))/10000
+  c_stat[count] <- roc.curve(scores.class0 = p1, scores.class1 = p0)$auc
+  precision_recall[count] <- pr.curve(scores.class0 = p1, scores.class1 = p0)$auc.integral
   
   print(count)
   count = count + 1
 }
-saveRDS(c(c_stat,mean_true,mean_null),'full_rf_results.rds')
+
 ##################
 #SMOTE Tests
 ##################

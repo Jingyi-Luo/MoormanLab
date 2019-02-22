@@ -107,48 +107,6 @@ encoded_te_df.to_csv('encoded_te.csv', index=False)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # -----------------------------------------------------------------------------
 # ------------------------- mse and ROC curve ---------------------------------
 #predictions = autoencoder.predict(x_te)
@@ -220,35 +178,5 @@ encoded_te_df.to_csv('encoded_te.csv', index=False)
 #plt.xlabel("Data point index")
 #plt.show();
 # -----------------------------------------------------------------------------
-
-
-
-# 1. reconstruct/represent the original data. Encoder and decoder: how does the model learn from the data?
-# 2. encoder: force the model to learn the useful properties of the data and reduce dimension by limitting the number of
-#    hidden units or add other constraints.
-# 3. autoencoder use: 1) dimension reduciton (compressed representation of the input, similar to PCAs. Loose information(avoid)?); 
-#    2) feature learning;
-# 4. decoder: effectiveness?
-# 5. 1)used the encodered features with reduced dimension to train model? 2) use the autoencodered/reconstructed feature
-#    with the same dimension to train model? 3) a model itself?
-# 6. An autoencoder neural network is an unsupervised learning algorithm that applied backpropagation, setting the target
-#    values to be equal to the inputs. How to understand the equal?
-#    Independent algorithm or need to work with other algorithm?
-# 7. How to define/choose the hidden units (more than inputs, equal to inputs, or less than input)?
-# 8. How to choose activation function? Related with input?
-#    We would like the average activation of each hidden neuron j to be close to 0.05 (say). To satisfy this constraint, 
-#    the hidden unit’s activations must mostly be near 0.
-# 9. in almost all contexts where the term "autoencoder" is used, the compression and decompression functions are 
-#    implemented with neural networks.
-# 10.Autoencoders are data-specific, which means that they will only be able to compress data similar to what they have
-#    been trained on. E.g. An autoencoder trained on pictures of faces would do a rather poor job of compressing pictures of trees.
-# 11.I am curious about its application (areas and popularity)? Advantages?
-# 12.Sparsity constraints? Deactive some units (why)?
-#   encoded = Dense(encoding_dim, activation='relu', activity_regularizer=regularizers.l1(10e-5))(input_img)
-#    With this regularization, the model is less likely to overfit and can be trained longer)
-# 13.
-
-
-
 
 
